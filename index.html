@@ -55,8 +55,8 @@
     <div id="resultado"></div>
 
     <script>
-        const codigoValido = "1234567890"; // Cambia este código manualmente
-        let usosRestantes = 5;
+        // Lista de códigos válidos
+        const codigosValidos = new Set(["1234567890", "0987654321", "1111222233", "4444555566", "7777888899"]);
 
         function generarNumeroAleatorio(min, max) {
             return (Math.random() * (max - min) + min).toFixed(2);
@@ -66,13 +66,8 @@
             const codigoIngresado = document.getElementById("codigoInput").value;
             const resultadoDiv = document.getElementById("resultado");
 
-            if (codigoIngresado !== codigoValido) {
-                resultadoDiv.innerHTML = "<p class='error'>Código inválido. Por favor, intente nuevamente.</p>";
-                return;
-            }
-
-            if (usosRestantes <= 0) {
-                resultadoDiv.innerHTML = "<p class='error'>Se ha alcanzado el límite de usos. Por favor, contacte al administrador.</p>";
+            if (!codigosValidos.has(codigoIngresado)) {
+                resultadoDiv.innerHTML = "<p class='error'>Código inválido. Por favor, intente con un nuevo código.</p>";
                 return;
             }
 
@@ -96,7 +91,9 @@
             resultado += `<p>DPI: ${sensibilidad.dpi}%</p>`;
 
             resultadoDiv.innerHTML = resultado;
-            usosRestantes--;
+
+            // Eliminar el código usado de la lista de códigos válidos
+            codigosValidos.delete(codigoIngresado);
         }
 
         document.getElementById("generarBtn").addEventListener("click", generarSensibilidad);
