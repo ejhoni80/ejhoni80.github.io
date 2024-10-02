@@ -1,39 +1,44 @@
 <?php
 
-// Replace 'YOUR_BOT_TOKEN' with your actual Telegram bot token
+// Token de tu bot de Telegram
 $botToken = '1365656542:AAFv1_2FXKxQIV2jdQGN6HHewjNb1LrDWLk';
-$website = "https://api.telegram.org/bot$botToken";
 
-$input = file_get_contents('php://input');
-$update = json_decode($input, TRUE);
+// URL de la API de Telegram
+$apiUrl = "https://api.telegram.org/bot$botToken/";
 
-$chatId = $update['message']['chat']['id'];
-$message = $update['message']['text'];
+// Obtener las actualizaciones
+$update = json_decode(file_get_contents('php://input'), true);
 
-if ($message == '/start') {
-    $response = "Welcome! Use /generate to create a new password.";
-} elseif ($message == '/generate') {
-    $password = generatePassword();
-    $response = "Your new password is: $password";
-} else {
-    $response = "Unknown command. Use /generate to create a new password.";
+// Verificar si se recibió un mensaje
+if (isset($update['message'])) {
+    $chatId = $update['message']['chat']['id'];
+    $message = $update['message']['text'];
+
+    // Verificar si el mensaje es "/generar"
+    if ($message === '/generar') {
+        // Generar la contraseña
+        $password = generatePassword();
+        
+        // Enviar la contraseña generada
+        sendMessage($chatId, "Tu contraseña generada es: $password");
+    } else {
+        sendMessage($chatId, "Usa el comando /generar para obtener una nueva contraseña.");
+    }
 }
 
-sendMessage($chatId, $response);
-
+// Función para generar la contraseña
 function generatePassword() {
-    $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     $password = '';
     for ($i = 0; $i < 16; $i++) {
-        $password .= $characters[rand(0, strlen($characters) - 1)];
+        $password .= $chars[rand(0, strlen($chars) - 1)];
     }
     return $password;
 }
 
-function sendMessage($chatId, $message) {
-    global $website;
-    $url = $website.'/sendMessage?chat_id='.$chatId.'&text='.urlencode($message);
+// Función para enviar mensajes
+function sendMessage($chatId, $text) {
+    global $apiUrl;
+    $url = $apiUrl . "sendMessage?chat_id=$chatId&text=" . urlencode($text);
     file_get_contents($url);
 }
-
-?>
