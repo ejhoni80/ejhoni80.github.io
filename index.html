@@ -1,102 +1,39 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Sensibilidad para Free Fire</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        #codigoInput {
-            margin: 10px 0;
-            padding: 5px;
-            font-size: 16px;
-        }
-        #generarBtn {
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-        }
-        #resultado {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: white;
-            width: 80%;
-            max-width: 400px;
-        }
-        .error {
-            color: red;
-        }
-    </style>
-</head>
-<body>
-    <h1>Generador de Sensibilidad para Free Fire</h1>
-    <input type="text" id="codigoInput" placeholder="Ingrese el código de 10 dígitos">
-    <button id="generarBtn">Generar Sensibilidad</button>
-    <div id="resultado"></div>
+<?php
 
-    <script>
-        // Lista de códigos válidos
-        const codigosValidos = new Set(["1234567890", "0987654321", "1111222233", "4444555566", "7777888899"]);
+// Replace 'YOUR_BOT_TOKEN' with your actual Telegram bot token
+$botToken = '1365656542:AAFv1_2FXKxQIV2jdQGN6HHewjNb1LrDWLk';
+$website = "https://api.telegram.org/bot$botToken";
 
-        function generarNumeroAleatorio(min, max) {
-            return (Math.random() * (max - min) + min).toFixed(2);
-        }
+$input = file_get_contents('php://input');
+$update = json_decode($input, TRUE);
 
-        function generarSensibilidad() {
-            const codigoIngresado = document.getElementById("codigoInput").value;
-            const resultadoDiv = document.getElementById("resultado");
+$chatId = $update['message']['chat']['id'];
+$message = $update['message']['text'];
 
-            if (!codigosValidos.has(codigoIngresado)) {
-                resultadoDiv.innerHTML = "<p class='error'>Código inválido. Por favor, intente con un nuevo código.</p>";
-                return;
-            }
+if ($message == '/start') {
+    $response = "Welcome! Use /generate to create a new password.";
+} elseif ($message == '/generate') {
+    $password = generatePassword();
+    $response = "Your new password is: $password";
+} else {
+    $response = "Unknown command. Use /generate to create a new password.";
+}
 
-            const sensibilidad = {
-                general: generarNumeroAleatorio(160, 200),
-                puntoRojo: generarNumeroAleatorio(150, 180),
-                miraX2: generarNumeroAleatorio(100, 150),
-                miraX4: generarNumeroAleatorio(100, 150),
-                awm: generarNumeroAleatorio(50, 100),
-                camara: generarNumeroAleatorio(10, 50),
-                dpi: generarNumeroAleatorio(400, 600)
-            };
+sendMessage($chatId, $response);
 
-            let resultado = "<h2>Sensibilidad Generada:</h2>";
-            resultado += `<p>General: ${sensibilidad.general}%</p>`;
-            resultado += `<p>Punto Rojo: ${sensibilidad.puntoRojo}%</p>`;
-            resultado += `<p>Mira x2: ${sensibilidad.miraX2}%</p>`;
-            resultado += `<p>Mira x4: ${sensibilidad.miraX4}%</p>`;
-            resultado += `<p>AWM: ${sensibilidad.awm}%</p>`;
-            resultado += `<p>Cámara: ${sensibilidad.camara}%</p>`;
-            resultado += `<p>DPI: ${sensibilidad.dpi}%</p>`;
+function generatePassword() {
+    $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    $password = '';
+    for ($i = 0; $i < 16; $i++) {
+        $password .= $characters[rand(0, strlen($characters) - 1)];
+    }
+    return $password;
+}
 
-            resultadoDiv.innerHTML = resultado;
+function sendMessage($chatId, $message) {
+    global $website;
+    $url = $website.'/sendMessage?chat_id='.$chatId.'&text='.urlencode($message);
+    file_get_contents($url);
+}
 
-            // Eliminar el código usado de la lista de códigos válidos
-            codigosValidos.delete(codigoIngresado);
-        }
-
-        document.getElementById("generarBtn").addEventListener("click", generarSensibilidad);
-    </script>
-</body>
-</html>
+?>
